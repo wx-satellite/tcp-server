@@ -65,7 +65,7 @@ func handlePayload(payload frame.PayLoad) (ack frame.PayLoad, err error) {
 			ID:     v.ID,
 			Result: 0, // 返回成功
 		}
-		ack, err = ackPacket.Encode()
+		ack, err = packet.Encode(ackPacket)
 		if err != nil {
 			fmt.Println("handleConn: payload encode error:", err)
 			return

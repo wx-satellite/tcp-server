@@ -15,7 +15,10 @@ func main() {
 	waitGroup.Add(num)
 	for i := 0; i < 5; i++ {
 		go func(i int) {
-			defer waitGroup.Done()
+			defer func() {
+				waitGroup.Done()
+				fmt.Println(recover())
+			}()
 			startClient(i)
 		}(i + 1)
 	}

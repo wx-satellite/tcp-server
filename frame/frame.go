@@ -3,6 +3,7 @@ package frame
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -14,37 +15,32 @@ frameHeader 定义：
 
 framePayload 定义：
 	Packet
- */
+*/
 
 type PayLoad []byte
 
 type Stream interface {
-	Encode(writer io.Writer, load PayLoad)error // 打包
-	Decode(reader io.Reader)(PayLoad, error) // 解包
+	Encode(writer io.Writer, load PayLoad) error // 打包
+	Decode(reader io.Reader) (PayLoad, error)    // 解包
 }
-
 
 var ErrShortWrite = errors.New("short write")
 var ErrShortRead = errors.New("short read")
 
-
 type frame struct {
-
 }
-
 
 func New() Stream {
 	return &frame{}
 }
 
-
 func (f *frame) Encode(w io.Writer, payload PayLoad) (err error) {
-	var totalLength  = 4 + int32(len(payload))
+	var totalLength = 4 + int32(len(payload))
 	err = binary.Write(w, binary.BigEndian, &totalLength)
 	if err != nil {
 		return
 	}
-	n, err :=w.Write(payload)
+	n, err := w.Write(payload)
 	if err != nil {
 		return
 	}
@@ -55,11 +51,14 @@ func (f *frame) Encode(w io.Writer, payload PayLoad) (err error) {
 	return
 }
 
-
-func (f *frame) Decode(r io.Reader)(payLoad PayLoad, err error) {
+func (f *frame) Decode(r io.Reader) (payLoad PayLoad, err error) {
 	var totalLength int32
 	err = binary.Read(r, binary.BigEndian, &totalLength)
 	if err != nil {
+		return
+	}
+	if totalLength <= 0 {
+		err = fmt.Errorf("totalLength got %d", totalLength)
 		return
 	}
 	buf := make([]byte, totalLength-4)
