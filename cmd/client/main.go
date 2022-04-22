@@ -17,7 +17,6 @@ func main() {
 		go func(i int) {
 			defer func() {
 				waitGroup.Done()
-				fmt.Println(recover())
 			}()
 			startClient(i)
 		}(i + 1)
@@ -53,7 +52,7 @@ func startClient(i int) {
 			}
 
 			// 使用 SetReadDeadline 方法设置了读超时，这主要是考虑该 Goroutine 可以在收到退出通知时，能及时从 Read 阻塞中跳出来
-			_ = conn.SetReadDeadline(time.Now().Add(time.Second * 1))
+			_ = conn.SetReadDeadline(time.Now().Add(time.Second * 2))
 			payload, err := stream.Decode(conn)
 			if err != nil {
 				if e, ok := err.(net.Error); ok {
